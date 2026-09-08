@@ -1,0 +1,33 @@
+{
+  "name": "corkboard-task-manager-server",
+  "version": "1.0.0",
+  "description": "Backend REST API for Corkboard & Sticky Notes Task Manager with JWT authentication and Mongoose ODM",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "task-manager",
+    "express",
+    "jwt",
+    "mongoose",
+    "mongodb",
+    "corkboard"
+  ],
+  "author": "Senior Full-Stack Developer",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb-memory-server": "^10.1.4",
+    "mongoose": "^8.9.5"
+  }
+}
