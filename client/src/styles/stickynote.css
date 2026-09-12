@@ -1,0 +1,363 @@
+/* Sticky Note Card Aesthetics & Micro-interactions */
+
+.sticky-note {
+  position: relative;
+  background-color: var(--note-yellow);
+  color: var(--ink-primary);
+  padding: 20px 16px 14px;
+  border-radius: 2px 2px 8px 2px;
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.14),
+    0 10px 20px rgba(0, 0, 0, 0.08),
+    inset 0 -8px 12px rgba(0, 0, 0, 0.03);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), 
+              box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  user-select: none;
+  cursor: grab;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .sticky-note {
+    padding: 16px 12px 12px;
+  }
+}
+
+/* Subtle corner peel / curl on bottom right */
+.sticky-note::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, 0.12) 50%, rgba(0, 0, 0, 0.2) 100%);
+  border-bottom-right-radius: 4px;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+/* Hover Physics - Gentle loose sway */
+.sticky-note:hover {
+  transform: translateY(-3px) scale(1.01) !important;
+  box-shadow: 
+    0 10px 22px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.12),
+    inset 0 -8px 12px rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+.sticky-note:hover::after {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, 0.18) 50%, rgba(0, 0, 0, 0.3) 100%);
+}
+
+/* Dragging State - "Peels off" and elevates high with deep shadow */
+.sticky-note.is-dragging {
+  opacity: 0.88;
+  cursor: grabbing;
+  transform: scale(1.04) rotate(2deg) !important;
+  box-shadow: 
+    0 20px 32px rgba(0, 0, 0, 0.32),
+    0 8px 14px rgba(0, 0, 0, 0.2);
+  z-index: 99;
+}
+
+/* Pushpin Motifs (Top center or top corner) */
+.pin-motif {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35));
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sticky-note:hover .pin-motif {
+  transform: translateX(-50%) translateY(-2px) rotate(6deg);
+}
+
+/* Washi Tape Strip Alternative */
+.washi-tape-motif {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1deg);
+  width: 74px;
+  height: 20px;
+  background: var(--tape-semi);
+  border-left: 2px dashed rgba(180, 160, 120, 0.5);
+  border-right: 2px dashed rgba(180, 160, 120, 0.5);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  z-index: 4;
+}
+
+/* Note Content Typography */
+.note-title {
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--ink-primary);
+  margin-top: 4px;
+  margin-bottom: 6px;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  .note-title {
+    font-size: 1.2rem;
+  }
+}
+
+.note-description {
+  font-family: var(--font-reading);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--ink-secondary);
+  margin-bottom: 12px;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+/* Overdue Alert String Motif */
+.overdue-ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fde8e5;
+  border: 1px solid #f3b5ad;
+  color: #c93b2b;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(201, 59, 43, 0.15);
+  position: relative;
+}
+
+.overdue-ribbon::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 10px;
+  width: 2px;
+  height: 6px;
+  background: var(--string-red);
+}
+
+/* Priority Stamp */
+.priority-stamp {
+  font-family: var(--font-title);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  display: inline-block;
+  transform: rotate(-2deg);
+}
+
+.priority-stamp.priority-high {
+  color: #9e2318;
+  border-color: #9e2318;
+  background: rgba(217, 72, 59, 0.12);
+}
+
+.priority-stamp.priority-normal {
+  color: #7d5b12;
+  border-color: #7d5b12;
+  background: rgba(212, 163, 66, 0.12);
+}
+
+.priority-stamp.priority-low {
+  color: #245b80;
+  border-color: #245b80;
+  background: rgba(59, 130, 182, 0.12);
+}
+
+/* Tags Cloud */
+.note-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.note-tag-chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  color: var(--ink-secondary);
+  word-break: break-word;
+}
+
+/* Note Footer & Metadata */
+.note-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.12);
+  margin-top: auto;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.note-date-badge {
+  font-size: 0.76rem;
+  color: var(--ink-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.note-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.note-action-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-secondary);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: var(--transition-snappy);
+}
+
+.note-action-btn:hover {
+  background: #ffffff;
+  color: var(--ink-primary);
+  transform: scale(1.12);
+}
+
+.note-action-btn.delete-action:hover {
+  background: #fde8e5;
+  color: #c93b2b;
+  border-color: #f3b5ad;
+}
+
+.note-action-btn.done-action {
+  color: #276749;
+}
+
+.note-action-btn.done-action:hover {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+/* Mobile Quick Status Dropdown */
+.mobile-status-select {
+  display: none;
+  font-size: 0.74rem;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+  max-width: 95px;
+}
+
+@media (max-width: 768px) {
+  .mobile-status-select {
+    display: inline-block;
+  }
+}
+
+/* Loading Blank Sticky Note Placeholder Skeleton */
+.sticky-skeleton {
+  min-height: 140px;
+  background: rgba(245, 224, 122, 0.45);
+  border: 2px dashed rgba(216, 194, 85, 0.6);
+  border-radius: 4px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  animation: pulse-cork 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 13px;
+  background: rgba(0, 0, 0, 0.07);
+  border-radius: 3px;
+}
+
+.skeleton-line.title {
+  width: 70%;
+  height: 18px;
+}
+
+.skeleton-line.desc {
+  width: 90%;
+}
+
+.skeleton-line.short {
+  width: 40%;
+}
+
+@keyframes pulse-cork {
+  0%, 100% { opacity: 0.55; transform: scale(0.99); }
+  50% { opacity: 0.85; transform: scale(1); }
+}
+
+/* Freeform Pinboard View Styles */
+.pinboard-canvas {
+  position: relative;
+  min-height: 500px;
+  width: 100%;
+  padding: 18px;
+  overflow: auto;
+  box-sizing: border-box;
+  background-image: 
+    radial-gradient(circle, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@media (max-width: 768px) {
+  .pinboard-canvas {
+    padding: 12px 8px;
+  }
+}
+
+.pinboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 580px) {
+  .pinboard-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+.pinboard-card-wrapper {
+  width: 100%;
+  box-sizing: border-box;
+}

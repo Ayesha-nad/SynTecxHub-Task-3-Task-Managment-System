@@ -1,0 +1,73 @@
+:root {
+  /* Corkboard Palette */
+  --cork-base: #a9784f;
+  --cork-dark: #8c5d36;
+  --cork-light: #c29267;
+  --cork-shadow: rgba(43, 24, 9, 0.45);
+  --wood-frame: #5a3821;
+  --wood-trim: #784c2d;
+  --wood-highlight: #9c6740;
+
+  /* Paper Chrome & Inks */
+  --paper-bg: #faf7f0;
+  --paper-card: #fffdf9;
+  --paper-hover: #f3efe6;
+  --paper-line: #e3dac9;
+  --paper-border: #dcd3c1;
+  --ink-primary: #22303f;
+  --ink-secondary: #4a5c6e;
+  --ink-muted: #788896;
+  --ink-faint: #a2b0be;
+
+  /* Sticky Note Color Variations */
+  --note-yellow: #f5e07a;
+  --note-yellow-dark: #d8c255;
+  --note-yellow-shadow: rgba(184, 154, 26, 0.25);
+
+  --note-coral: #f39a8a;
+  --note-coral-dark: #d67a69;
+  --note-coral-shadow: rgba(194, 76, 56, 0.25);
+
+  --note-mint: #a8d8b9;
+  --note-mint-dark: #82b995;
+  --note-mint-shadow: rgba(64, 134, 88, 0.25);
+
+  --note-blue: #a9cce8;
+  --note-blue-dark: #84aacc;
+  --note-blue-shadow: rgba(60, 116, 166, 0.25);
+
+  --note-lavender: #e8d5f5;
+  --note-lavender-dark: #c5aed6;
+  --note-lavender-shadow: rgba(138, 93, 171, 0.25);
+
+  --note-peach: #ffd39a;
+  --note-peach-dark: #dba866;
+  --note-peach-shadow: rgba(189, 122, 38, 0.25);
+
+  /* Tactile UI Accents */
+  --pin-red: #d9483b;
+  --pin-red-glow: #ff7366;
+  --pin-brass: #d4a342;
+  --pin-wood: #825232;
+  --pin-teal: #2a9d8f;
+  --string-red: #c93b2b;
+  --tape-semi: rgba(245, 235, 205, 0.72);
+
+  /* Typography */
+  --font-hand: 'Caveat', 'Kalam', cursive, sans-serif;
+  --font-title: 'Kalam', 'Caveat', cursive, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-reading: 'Work Sans', 'Inter', sans-serif;
+
+  /* Shadows & Depth */
+  --shadow-pin: 0 4px 8px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.18);
+  --shadow-note: 0 4px 10px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(0, 0, 0, 0.08);
+  --shadow-note-lifted: 0 18px 30px rgba(0, 0, 0, 0.22), 0 8px 12px rgba(0, 0, 0, 0.12);
+  --shadow-wood-inset: inset 0 3px 12px rgba(0, 0, 0, 0.45);
+  --shadow-wood-frame: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.15);
+
+  /* Transitions */
+  --transition-snappy: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-smooth: all 0.25s ease;
+  --transition-spring: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
