@@ -1,0 +1,285 @@
+/* Notebook Cover & Memo Binder Authentication Pages */
+
+.auth-viewport {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 8px;
+  box-sizing: border-box;
+  background-color: var(--cork-base);
+  background-image: 
+    radial-gradient(ellipse at 50% 40%, rgba(255, 235, 200, 0.15) 0%, rgba(0, 0, 0, 0.4) 100%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.55  0 0 0 0 0.35  0 0 0 0 0.20  0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  overflow-x: hidden;
+}
+
+/* Outer Notebook Binder Cover */
+.notebook-binder {
+  width: 100%;
+  max-width: 460px;
+  background: #3e2415;
+  border-radius: 14px;
+  padding: 12px 12px 12px 24px;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.55),
+    0 8px 16px rgba(0, 0, 0, 0.35),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2);
+  position: relative;
+  border: 1px solid #5a371e;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .notebook-binder {
+    padding: 8px 6px 8px 16px;
+    border-radius: 10px;
+  }
+}
+
+/* Spiral Ring Binding on Left Edge */
+.notebook-binder::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  bottom: 20px;
+  left: 6px;
+  width: 12px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #cfd6df 0px,
+    #8d99ae 4px,
+    #2b2d42 8px,
+    transparent 8px,
+    transparent 22px
+  );
+  border-radius: 4px;
+  z-index: 10;
+  filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
+}
+
+@media (max-width: 480px) {
+  .notebook-binder::before {
+    left: 4px;
+    width: 9px;
+  }
+}
+
+/* Notebook Page (Lined Paper Effect) */
+.notebook-page {
+  background-color: var(--paper-bg);
+  background-image: 
+    linear-gradient(90deg, transparent 30px, #f28482 30px, #f28482 32px, transparent 32px),
+    linear-gradient(#e9e4d4 1px, transparent 1px);
+  background-size: 100% 100%, 100% 28px;
+  background-position: 0 0, 0 16px;
+  border-radius: 8px;
+  padding: 28px 28px 28px 36px;
+  box-shadow: 
+    inset 4px 0 12px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .notebook-page {
+    padding: 20px 14px 20px 20px;
+    background-image: 
+      linear-gradient(90deg, transparent 18px, #f28482 18px, #f28482 20px, transparent 20px),
+      linear-gradient(#e9e4d4 1px, transparent 1px);
+  }
+}
+
+/* Decorative Stamp on Top Right */
+.notebook-stamp {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  border: 2px dashed #9c6740;
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(12deg);
+  opacity: 0.65;
+  pointer-events: none;
+  font-family: var(--font-title);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #784c2d;
+  text-align: center;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+@media (max-width: 440px) {
+  .notebook-stamp {
+    display: none;
+  }
+}
+
+/* Header & Title in Handwritten Font */
+.notebook-header {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.notebook-logo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-title);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #784c2d;
+  margin-bottom: 4px;
+}
+
+.notebook-title {
+  font-family: var(--font-title);
+  font-size: 1.85rem;
+  color: var(--ink-primary);
+  line-height: 1.15;
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  .notebook-title {
+    font-size: 1.55rem;
+  }
+}
+
+.notebook-subtitle {
+  font-family: var(--font-reading);
+  font-size: 0.88rem;
+  color: var(--ink-secondary);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+/* Notebook Form Fields */
+.notebook-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+.notebook-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.notebook-label {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notebook-input {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 0.92rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--paper-border);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+}
+
+.notebook-input:focus {
+  background: #ffffff;
+  border-color: #784c2d;
+}
+
+.notebook-input.has-error {
+  border-color: #d9483b;
+  background: #fff8f7;
+}
+
+/* Handwritten Inline Error Note */
+.field-error-note {
+  font-family: var(--font-hand);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #c93b2b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+/* Quick Fill Demo Note */
+.demo-fill-card {
+  margin-top: 16px;
+  padding: 8px 12px;
+  background: rgba(245, 224, 122, 0.35);
+  border: 1px dashed #d4be52;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #4a3c0e;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+@media (max-width: 400px) {
+  .demo-fill-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.demo-fill-card button {
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  background: #f5e07a;
+  border: 1px solid #d4be52;
+  border-radius: 4px;
+  color: #2b2005;
+  white-space: nowrap;
+}
+
+.demo-fill-card button:hover {
+  background: #fae88a;
+  transform: translateY(-1px);
+}
+
+/* Auth Navigation Link */
+.auth-switch-text {
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--ink-secondary);
+  margin-top: 16px;
+  font-family: var(--font-reading);
+  line-height: 1.4;
+}
+
+.auth-switch-text a {
+  color: #784c2d;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.auth-switch-text a:hover {
+  color: #502f18;
+}
