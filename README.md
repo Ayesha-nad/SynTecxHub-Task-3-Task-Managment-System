@@ -1,5 +1,10 @@
 # 📌 PinBoard — Corkboard & Sticky Notes Task Manager
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-brightgreen?style=for-the-badge&logo=github)](https://ayesha-nad.github.io/SynTecxHub-Task-3-Task-Managment-System/)
+[![GitHub Actions](https://img.shields.io/badge/Deployment-Automated%20CI%2FCD-blue?style=for-the-badge&logo=github-actions)](https://github.com/Ayesha-nad/SynTecxHub-Task-3-Task-Managment-System/actions)
+
+> 🌐 **Live Application URL**: **[https://ayesha-nad.github.io/SynTecxHub-Task-3-Task-Managment-System/](https://ayesha-nad.github.io/SynTecxHub-Task-3-Task-Managment-System/)**
+
 A full-stack, tactile task management web application built with **React**, **Node.js + Express**, and **MongoDB (Mongoose)**. Featuring secure **JWT Authentication**, full CRUD capabilities, native HTML5 drag-and-drop, and an original **"Corkboard & Sticky Notes"** physical productivity-wall aesthetic.
 
 ---
