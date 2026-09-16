@@ -1,20 +1,36 @@
 import axios from 'axios';
 
 /**
- * Global Axios API Client
- * Configured with baseURL, JWT interceptor, 401 handler,
- * and seamless in-browser demo mock storage fallback for static live hosts (like GitHub Pages).
+ * Check if the application is running in a static web hosting environment (e.g. GitHub Pages)
+ * where no backend Node server is running on the same domain.
  */
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 5000,
-});
+const isStaticHost =
+  typeof window !== 'undefined' &&
+  (window.location.hostname.includes('github.io') ||
+    window.location.hostname.includes('vercel.app') ||
+    window.location.hostname.includes('netlify.app') ||
+    window.location.protocol === 'file:') &&
+  !import.meta.env.VITE_API_URL;
 
-// Seed default mock data if not initialized
+/**
+ * Initialize persistent mock database in localStorage for live static demo
+ */
 const initializeMockStorage = () => {
+  // 1. Mock Users
+  if (!localStorage.getItem('corkboard_mock_users')) {
+    const defaultUsers = [
+      {
+        id: 'user_demo_1',
+        name: 'Alex Morgan',
+        email: 'demo@corkboard.app',
+        password: 'DemoPass123!',
+        avatarColor: '#f5e07a',
+      },
+    ];
+    localStorage.setItem('corkboard_mock_users', JSON.stringify(defaultUsers));
+  }
+
+  // 2. Mock Tasks
   if (!localStorage.getItem('corkboard_mock_tasks')) {
     const now = new Date();
     const pastDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString();
@@ -94,72 +110,180 @@ const initializeMockStorage = () => {
 
 initializeMockStorage();
 
-// In-browser mock handler for static deployments (GitHub Pages)
-const handleMockFallback = (method, url, data = null, params = null) => {
-  const tasksStr = localStorage.getItem('corkboard_mock_tasks') || '[]';
-  let tasks = JSON.parse(tasksStr);
+/**
+ * In-Browser Mock Store Request Dispatcher
+ */
+const executeMockOperation = (method, url, data = null, params = null) => {
+  const users = JSON.parse(localStorage.getItem('corkboard_mock_users') || '[]');
+  let tasks = JSON.parse(localStorage.getItem('corkboard_mock_tasks') || '[]');
 
-  // 1. Auth routes
-  if (url.includes('/auth/login')) {
+  // Clean URL path
+  const path = url.replace(/^\/?api/, '').replace(/^\/+/, '/');
+
+  // 1. POST /auth/login
+  if (path === '/auth/login' || path.endsWith('/auth/login')) {
     const { email, password } = data || {};
-    if (email === 'demo@corkboard.app' || (password && password.length >= 6)) {
-      const name = email.split('@')[0];
-      const mockUser = {
-        id: 'mock_user_' + Date.now(),
-        name: name.charAt(0).toUpperCase() + name.slice(1),
-        email: email.toLowerCase(),
-        avatarColor: '#f5e07a',
+    const normalizedEmail = (email || '').trim().toLowerCase();
+
+    // Check registered mock users or default demo
+    const user = users.find((u) => u.email.toLowerCase() === normalizedEmail);
+
+    if (user && (user.password === password || normalizedEmail === 'demo@corkboard.app')) {
+      const token = 'mock_jwt_token_' + Date.now();
+      const safeUser = {
+        id: user.id || user._id,
+        name: user.name,
+        email: user.email,
+        avatarColor: user.avatarColor || '#f5e07a',
       };
-      return {
+      return Promise.resolve({
         data: {
           success: true,
-          message: 'Signed in successfully (Live Demo Mode).',
-          token: 'mock_jwt_token_' + Date.now(),
-          user: mockUser,
+          message: 'Signed in successfully! (Live Demo Mode)',
+          token,
+          user: safeUser,
         },
-      };
+      });
     }
-    return {
-      status: 401,
-      data: {
-        success: false,
-        message: 'Invalid email or password. Click "Fill Demo" for instant login.',
+
+    // If demo credentials matched
+    if (normalizedEmail === 'demo@corkboard.app' && password === 'DemoPass123!') {
+      const token = 'mock_jwt_token_' + Date.now();
+      const safeUser = {
+        id: 'user_demo_1',
+        name: 'Alex Morgan',
+        email: 'demo@corkboard.app',
+        avatarColor: '#f5e07a',
+      };
+      return Promise.resolve({
+        data: {
+          success: true,
+          message: 'Signed in as Demo User!',
+          token,
+          user: safeUser,
+        },
+      });
+    }
+
+    return Promise.reject({
+      response: {
+        status: 401,
+        data: {
+          success: false,
+          message: 'Invalid email or password. Click "Fill Demo" for instant 1-click login.',
+          code: 'INVALID_CREDENTIALS',
+        },
       },
-    };
+    });
   }
 
-  if (url.includes('/auth/register')) {
-    const { name, email } = data || {};
-    const mockUser = {
+  // 2. POST /auth/register
+  if (path === '/auth/register' || path.endsWith('/auth/register')) {
+    const { name, email, password } = data || {};
+    const normalizedEmail = (email || '').trim().toLowerCase();
+
+    if (!name || name.trim().length < 2) {
+      return Promise.reject({
+        response: {
+          status: 400,
+          data: {
+            success: false,
+            message: 'Name must be at least 2 characters long.',
+            errors: { name: 'Name must be at least 2 characters' },
+          },
+        },
+      });
+    }
+
+    if (!normalizedEmail || !normalizedEmail.includes('@')) {
+      return Promise.reject({
+        response: {
+          status: 400,
+          data: {
+            success: false,
+            message: 'Please provide a valid email address.',
+            errors: { email: 'Please provide a valid email address' },
+          },
+        },
+      });
+    }
+
+    if (!password || password.length < 6) {
+      return Promise.reject({
+        response: {
+          status: 400,
+          data: {
+            success: false,
+            message: 'Password must be at least 6 characters long.',
+            errors: { password: 'Password must be at least 6 characters long' },
+          },
+        },
+      });
+    }
+
+    // Check duplicate email
+    const existing = users.find((u) => u.email.toLowerCase() === normalizedEmail);
+    if (existing && normalizedEmail !== 'demo@corkboard.app') {
+      return Promise.reject({
+        response: {
+          status: 400,
+          data: {
+            success: false,
+            message: 'An account with this email address already exists. Please log in.',
+            errors: { email: 'Email already registered' },
+          },
+        },
+      });
+    }
+
+    const AVATAR_COLORS = ['#f5e07a', '#f39a8a', '#a8d8b9', '#a9cce8', '#e8d5f5', '#ffd39a'];
+    const randomAvatar = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
+
+    const newUser = {
       id: 'mock_user_' + Date.now(),
-      name: name || 'Demo User',
-      email: (email || 'user@corkboard.app').toLowerCase(),
-      avatarColor: '#ffd39a',
+      name: name.trim(),
+      email: normalizedEmail,
+      password,
+      avatarColor: randomAvatar,
     };
-    return {
+
+    users.push(newUser);
+    localStorage.setItem('corkboard_mock_users', JSON.stringify(users));
+
+    const token = 'mock_jwt_token_' + Date.now();
+    const safeUser = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      avatarColor: newUser.avatarColor,
+    };
+
+    return Promise.resolve({
       data: {
         success: true,
         message: 'Account created successfully! Welcome to your corkboard.',
-        token: 'mock_jwt_token_' + Date.now(),
-        user: mockUser,
+        token,
+        user: safeUser,
       },
-    };
+    });
   }
 
-  if (url.includes('/auth/me')) {
+  // 3. GET /auth/me
+  if (path === '/auth/me' || path.endsWith('/auth/me')) {
     const cachedUser = localStorage.getItem('corkboard_user');
-    return {
+    const user = cachedUser
+      ? JSON.parse(cachedUser)
+      : { id: 'mock_user_1', name: 'Alex Morgan', email: 'demo@corkboard.app', avatarColor: '#f5e07a' };
+    return Promise.resolve({
       data: {
         success: true,
-        user: cachedUser
-          ? JSON.parse(cachedUser)
-          : { id: 'mock_me', name: 'Demo User', email: 'demo@corkboard.app', avatarColor: '#f5e07a' },
+        user,
       },
-    };
+    });
   }
 
-  // 2. Task stats route
-  if (url.includes('/tasks/stats/summary')) {
+  // 4. GET /tasks/stats/summary
+  if (path.includes('/tasks/stats/summary')) {
     const total = tasks.length;
     const todo = tasks.filter((t) => t.status === 'todo').length;
     const inProgress = tasks.filter((t) => t.status === 'in-progress').length;
@@ -171,18 +295,18 @@ const handleMockFallback = (method, url, data = null, params = null) => {
 
     const allTags = Array.from(new Set(tasks.flatMap((t) => t.tags || []))).filter(Boolean);
 
-    return {
+    return Promise.resolve({
       data: {
         success: true,
         stats: { total, todo, inProgress, done, highPriority, overdue },
         availableTags: allTags,
       },
-    };
+    });
   }
 
-  // 3. Task status patch
-  if (method === 'patch' && url.match(/\/tasks\/([^/]+)\/status/)) {
-    const id = url.split('/tasks/')[1].split('/status')[0];
+  // 5. PATCH /tasks/:id/status
+  if (method === 'patch' && path.match(/\/tasks\/([^/]+)\/status/)) {
+    const id = path.split('/tasks/')[1].split('/status')[0];
     const { status } = data || {};
     tasks = tasks.map((t) => {
       if (t._id === id) {
@@ -196,28 +320,28 @@ const handleMockFallback = (method, url, data = null, params = null) => {
     });
     localStorage.setItem('corkboard_mock_tasks', JSON.stringify(tasks));
     const updated = tasks.find((t) => t._id === id);
-    return { data: { success: true, task: updated } };
+    return Promise.resolve({ data: { success: true, task: updated } });
   }
 
-  // 4. Task delete
-  if (method === 'delete' && url.match(/\/tasks\/([^/]+)/)) {
-    const id = url.split('/tasks/')[1];
+  // 6. DELETE /tasks/:id
+  if (method === 'delete' && path.match(/\/tasks\/([^/]+)/)) {
+    const id = path.split('/tasks/')[1];
     tasks = tasks.filter((t) => t._id !== id);
     localStorage.setItem('corkboard_mock_tasks', JSON.stringify(tasks));
-    return { data: { success: true, deletedTaskId: id } };
+    return Promise.resolve({ data: { success: true, deletedTaskId: id } });
   }
 
-  // 5. Task update
-  if (method === 'put' && url.match(/\/tasks\/([^/]+)/)) {
-    const id = url.split('/tasks/')[1];
+  // 7. PUT /tasks/:id
+  if (method === 'put' && path.match(/\/tasks\/([^/]+)/)) {
+    const id = path.split('/tasks/')[1];
     tasks = tasks.map((t) => (t._id === id ? { ...t, ...data, _id: id } : t));
     localStorage.setItem('corkboard_mock_tasks', JSON.stringify(tasks));
     const updated = tasks.find((t) => t._id === id);
-    return { data: { success: true, task: updated } };
+    return Promise.resolve({ data: { success: true, task: updated } });
   }
 
-  // 6. Task create
-  if (method === 'post' && url.endsWith('/tasks')) {
+  // 8. POST /tasks
+  if (method === 'post' && (path === '/tasks' || path.endsWith('/tasks'))) {
     const newTask = {
       ...data,
       _id: 'task_' + Date.now() + Math.random().toString(36).substring(2, 6),
@@ -226,11 +350,11 @@ const handleMockFallback = (method, url, data = null, params = null) => {
     };
     tasks = [newTask, ...tasks];
     localStorage.setItem('corkboard_mock_tasks', JSON.stringify(tasks));
-    return { data: { success: true, task: newTask } };
+    return Promise.resolve({ data: { success: true, task: newTask } });
   }
 
-  // 7. Tasks list with search & filter
-  if (method === 'get' && (url.endsWith('/tasks') || url.includes('/tasks?'))) {
+  // 9. GET /tasks
+  if (method === 'get' && (path === '/tasks' || path.endsWith('/tasks') || path.includes('/tasks?'))) {
     let result = [...tasks];
     const { priority, tag, search, sort = 'createdAt', order = 'desc' } = params || {};
 
@@ -265,14 +389,57 @@ const handleMockFallback = (method, url, data = null, params = null) => {
       return order === 'desc' ? c2 - c1 : c1 - c2;
     });
 
-    return { data: { success: true, count: result.length, tasks: result } };
+    return Promise.resolve({ data: { success: true, count: result.length, tasks: result } });
   }
 
-  return { data: { success: true } };
+  return Promise.resolve({ data: { success: true } });
 };
 
-// Request Interceptor: Attach JWT from localStorage if present
-api.interceptors.request.use(
+/**
+ * Global API Client Object with automatic Static Host routing & Axios fallback
+ */
+const api = {
+  get: (url, config = {}) => {
+    if (isStaticHost) {
+      return executeMockOperation('get', url, null, config.params);
+    }
+    return axiosInstance.get(url, config).catch((err) => handleFallbackOrReject('get', url, null, config.params, err));
+  },
+  post: (url, data = {}, config = {}) => {
+    if (isStaticHost) {
+      return executeMockOperation('post', url, data, config.params);
+    }
+    return axiosInstance.post(url, data, config).catch((err) => handleFallbackOrReject('post', url, data, config.params, err));
+  },
+  put: (url, data = {}, config = {}) => {
+    if (isStaticHost) {
+      return executeMockOperation('put', url, data, config.params);
+    }
+    return axiosInstance.put(url, data, config).catch((err) => handleFallbackOrReject('put', url, data, config.params, err));
+  },
+  patch: (url, data = {}, config = {}) => {
+    if (isStaticHost) {
+      return executeMockOperation('patch', url, data, config.params);
+    }
+    return axiosInstance.patch(url, data, config).catch((err) => handleFallbackOrReject('patch', url, data, config.params, err));
+  },
+  delete: (url, config = {}) => {
+    if (isStaticHost) {
+      return executeMockOperation('delete', url, null, config.params);
+    }
+    return axiosInstance.delete(url, config).catch((err) => handleFallbackOrReject('delete', url, null, config.params, err));
+  },
+};
+
+const axiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || '/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 5000,
+});
+
+axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('corkboard_token');
     if (token) {
@@ -283,53 +450,34 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Catch 401 and network errors with smart mock fallback
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Check if network error (e.g. static host without backend or backend offline)
-    const isNetworkError =
-      !error.response ||
-      error.code === 'ERR_NETWORK' ||
-      error.code === 'ECONNABORTED' ||
-      error.response?.status === 404 ||
-      error.response?.status === 502;
+const handleFallbackOrReject = (method, url, data, params, error) => {
+  const isNetworkFailure =
+    !error.response ||
+    error.code === 'ERR_NETWORK' ||
+    error.code === 'ECONNABORTED' ||
+    error.response?.status === 404 ||
+    error.response?.status === 405 ||
+    error.response?.status === 502;
 
-    if (isNetworkError) {
-      console.info('📌 [PinBoard] Operating in live in-browser storage mode.');
-      const method = error.config.method?.toLowerCase() || 'get';
-      const url = error.config.url || '';
-      let data = null;
-      try {
-        data = typeof error.config.data === 'string' ? JSON.parse(error.config.data) : error.config.data;
-      } catch (e) {}
-
-      const mockResponse = handleMockFallback(method, url, data, error.config.params);
-      if (mockResponse.status === 401) {
-        return Promise.reject({ response: mockResponse });
-      }
-      return Promise.resolve(mockResponse);
-    }
-
-    if (error.response && error.response.status === 401) {
-      const isAuthRoute =
-        error.config.url.includes('/auth/login') ||
-        error.config.url.includes('/auth/register');
-
-      if (!isAuthRoute) {
-        window.dispatchEvent(
-          new CustomEvent('auth:unauthorized', {
-            detail: {
-              message:
-                error.response.data?.message ||
-                'Your session has expired. Please sign in again.',
-            },
-          })
-        );
-      }
-    }
-    return Promise.reject(error);
+  if (isNetworkFailure) {
+    console.info('📌 [PinBoard] Backend unreachable; switching to local in-browser storage mode.');
+    return executeMockOperation(method, url, data, params);
   }
-);
+
+  if (error.response && error.response.status === 401) {
+    const isAuthRoute = url.includes('/auth/login') || url.includes('/auth/register');
+    if (!isAuthRoute) {
+      window.dispatchEvent(
+        new CustomEvent('auth:unauthorized', {
+          detail: {
+            message: error.response.data?.message || 'Your session has expired. Please sign in again.',
+          },
+        })
+      );
+    }
+  }
+
+  return Promise.reject(error);
+};
 
 export default api;
